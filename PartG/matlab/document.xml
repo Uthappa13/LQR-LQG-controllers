@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body><w:p><w:pPr><w:pStyle w:val="code"/></w:pPr><w:r><w:t><![CDATA[% Declaring the constants
+M = 1000; % Mass of cart
+m1 = 100; % Mass of pendulum 1
+m2 = 100; % Mass of pendulum 2
+l1 = 20; % Length of pendulum 1
+l2 = 10; % Length of pendulum 2
+g = 9.81; % Acceleration due to gravity
+
+% Linearized A, B & D matrices
+A = [0, 1, 0, 0, 0, 0; 0, 0, -(m1*g)/M, 0, -(m2*g)/M, 0; 0, 0, 0, 1, 0, 0; 0, 0, -((M+m1)*g)/(M*l1), 0, -(m2*g)/(M*l1), 0; 0, 0, 0, 0, 0, 1; 0, 0, -(m1*g)/(M*l2), 0, -(g*(M+m2))/(M*l2), 0];
+B = [0; 1/M; 0; 1/(M*l1); 0; 1/(M*l2)];
+C = [1 0 0 0 0 0; 0 0 1 0 0 0; 0 0 0 0 1 0];        % Our choice of output as it covers x, theta1, theta2
+D = 0;
+
+% LQR cost parameters
+Q = 500*eye(6);
+R = 0.005;
+
+% State space
+sys = ss(A, B, C, D);
+
+% K Gain
+[K, ~, ~] = lqr(sys, Q, R);
+
+% Noise Covariance in Kalman Filter
+Ed = 1;
+Ev = 1;
+
+% Kalman Gain matrix
+[~, L, ~] = kalman(sys, Ed, Ev);
+
+% designing the system with LQR controller & Kalman Filter
+% System 1
+Ac = [(A-B*K), B*K; zeros(size(A)), (A-L*C)];
+Bc = [B; zeros(size(B))];
+Cc = [C zeros(size(C))];
+sys1 = ss(Ac, Bc, Cc, D);
+
+% initial conditions
+X0 = [0; 0; 30; 0; 40; 0; 0; 0; 0; 0; 0; 0];
+
+% plotting response
+figure
+initial(sys1, X0)]]></w:t></w:r></w:p></w:body></w:document>

@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body><w:p><w:pPr><w:pStyle w:val="code"/></w:pPr><w:r><w:t><![CDATA[syms x x_dot theta1 theta_dot_1 theta2 theta_dot_2;
+syms M m1 m2 l1 l2 g F;
+
+f1 = x_dot;
+f2 = simplify((-m1*g*sin(theta1)*cos(theta1)-m2*g*sin(theta2)*cos(theta2)-m1*l1*(theta_dot_1^2)*sin(theta1)-m2*l2*(theta_dot_2^2)*sin(theta2)+F)/(M+m1+m2-m1*((cos(theta1))^2)-m2*((cos(theta2))^2)));
+f3 = theta_dot_1;
+f4 = simplify((-m1*g*sin(theta1)*cos(theta1)-m2*g*sin(theta2)*cos(theta2)-m1*l1*(theta_dot_1^2)*sin(theta1)-m2*l2*(theta_dot_2^2)*sin(theta2)+F)/((M+m1+m2-m1*((cos(theta1))^2)-m2*((cos(theta2))^2))*l1)-(g*sin(theta1))/l1);
+f5 = theta_dot_2;
+f6 = simplify((-m1*g*sin(theta1)*cos(theta1)-m2*g*sin(theta2)*cos(theta2)-m1*l1*(theta_dot_1^2)*sin(theta1)-m2*l2*(theta_dot_2^2)*sin(theta2)+F)/((M+m1+m2-m1*((cos(theta1))^2)-m2*((cos(theta2))^2))*l2)-(g*sin(theta2))/l2);
+
+J = jacobian([f1, f2, f3, f4, f5, f6], [x, x_dot, theta1, theta_dot_1, theta2, theta_dot_2])
+% Define the equilibrium values
+% equilibrium_values = {x, 0.0, x_dot, 0.0, theta1, 0.0, theta_dot_1, 0.0, theta2, 0.0, theta_dot_2, 0.0};
+
+% Substitute the equilibrium values into the simplified Jacobian
+J_at_equilibrium = subs(J, {x, x_dot, theta1, theta_dot_1, theta2, theta_dot_2}, {0, 0, 0, 0, 0, 0});
+
+% J_at_equilibrium = subs(J_at_equilibrium, {M, m1, m2, l1, l2, g, F}, {1000, 100, 100, 20, 10, 10, 10});
+
+% Display the Jacobian at equilibrium
+A = simplify(J_at_equilibrium);
+disp(A);]]></w:t></w:r></w:p><w:p><w:pPr><w:sectPr/></w:pPr></w:p><w:p><w:pPr><w:pStyle w:val="code"/></w:pPr><w:r><w:t><![CDATA[B = [0; 1/M; 0; 1/(M*(l1)); 0; 1/(M*l2)];
+disp(B);]]></w:t></w:r></w:p><w:p><w:pPr><w:sectPr/></w:pPr></w:p><w:p><w:pPr><w:pStyle w:val="code"/></w:pPr><w:r><w:t><![CDATA[% The Controllability matrix
+Control = [B A*B (A^2)*B (A^3)*B (A^4)*B (A^5)*B];
+disp(Control);]]></w:t></w:r></w:p><w:p><w:pPr><w:sectPr/></w:pPr></w:p><w:p><w:pPr><w:pStyle w:val="code"/></w:pPr><w:r><w:t><![CDATA[% Rank of Controlability Matrix
+Rank = rank(Control);
+disp(Rank)]]></w:t></w:r></w:p><w:p><w:pPr><w:sectPr/></w:pPr></w:p><w:p><w:pPr><w:pStyle w:val="code"/></w:pPr><w:r><w:t><![CDATA[% Determinant of Controlability Matrix
+Control_det = simplify(det(Control));
+disp(Control_det);]]></w:t></w:r></w:p><w:p><w:pPr><w:sectPr/></w:pPr></w:p><w:p><w:pPr><w:pStyle w:val="code"/></w:pPr><w:r><w:t><![CDATA[A_val = double(subs(A, {M, m1, m2, l1, l2, g}, {1000, 100, 100, 20, 10, 9.81}));
+disp(A_val);]]></w:t></w:r></w:p><w:p><w:pPr><w:sectPr/></w:pPr></w:p><w:p><w:pPr><w:pStyle w:val="code"/></w:pPr><w:r><w:t><![CDATA[B_val = double(subs(B, {M, l1, l2}, {1000, 20, 10}));
+disp(B_val);]]></w:t></w:r></w:p><w:p><w:pPr><w:sectPr/></w:pPr></w:p><w:p><w:pPr><w:pStyle w:val="code"/></w:pPr><w:r><w:t><![CDATA[Control_val = ctrb(A_val, B_val);
+disp(Control_val);
+if rank(Control_val) == 6
+    disp('System is controllable.');
+else
+    disp('System is not controllable.');
+end]]></w:t></w:r></w:p><w:p><w:pPr><w:sectPr/></w:pPr></w:p><w:p><w:pPr><w:pStyle w:val="code"/></w:pPr><w:r><w:t><![CDATA[C = eye(6);
+D = 0;
+
+X_0 = [0; 0; 30; 0; 40; 0];
+sys1 = ss(A_val, B_val, C, D);
+
+t = 0:0.01:500;
+
+[y, t] = initial(sys1, X_0, t);
+
+for i = 1:size(y, 2)
+    figure;
+    plot(t, y(:, i));
+    title(['Response of Output ', num2str(i)]);
+    xlabel('Time');
+    ylabel(['Output ', num2str(i)]);
+end]]></w:t></w:r></w:p><w:p><w:pPr><w:sectPr/></w:pPr></w:p><w:p><w:pPr><w:pStyle w:val="code"/></w:pPr><w:r><w:t><![CDATA[Q = 500*eye(6);
+R = 0.005;
+
+[K, P, lamda] = lqr(sys1, Q, R);
+
+disp(K)]]></w:t></w:r></w:p><w:p><w:pPr><w:sectPr/></w:pPr></w:p><w:p><w:pPr><w:pStyle w:val="code"/></w:pPr><w:r><w:t><![CDATA[sys2 = ss((A_val-B_val*K), B_val, C, D);
+
+[y, t] = initial(sys2, X_0, t);
+
+for i = 1:size(y, 2)
+    figure;
+    plot(t, y(:, i));
+    title(['Response of Output ', num2str(i)]);
+    xlabel('Time');
+    ylabel(['Output ', num2str(i)]);
+end]]></w:t></w:r></w:p></w:body></w:document>

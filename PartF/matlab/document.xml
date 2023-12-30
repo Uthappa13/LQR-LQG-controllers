@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body><w:p><w:pPr><w:pStyle w:val="code"/></w:pPr><w:r><w:t><![CDATA[% poles of (A - BK)
+closed_loop_poles = [-0.3838 + 0.3543i; -0.3838 - 0.3543i; -0.0298 + 1.0347i; -0.0298 - 1.0347i; -0.0161 + 0.7213i; -0.0161 - 0.7213i];
+
+% assumed factor between the closed-loop and observer poles
+scale_factor = 5;
+
+% desired poles for the Luenberger Observer
+observer_poles = scale_factor*closed_loop_poles;
+
+% Declaring the constants
+M = 1000; % Mass of cart
+m1 = 100; % Mass of pendulum 1
+m2 = 100; % Mass of pendulum 2
+l1 = 20; % Length of pendulum 1
+l2 = 10; % Length of pendulum 2
+g = 9.81; % Acceleration due to gravity
+
+K = [316.2278, 926.8775, -41.7027, -683.4756, 44.1102, -334.2650];
+
+% Linearized A, B & D matrices
+A = [0, 1, 0, 0, 0, 0; 0, 0, -(m1*g)/M, 0, -(m2*g)/M, 0; 0, 0, 0, 1, 0, 0; 0, 0, -((M+m1)*g)/(M*l1), 0, -(m2*g)/(M*l1), 0; 0, 0, 0, 0, 0, 1; 0, 0, -(m1*g)/(M*l2), 0, -(g*(M+m2))/(M*l2), 0];
+B = [0; 1/M; 0; 1/(M*l1); 0; 1/(M*l2)];
+D = 0;
+
+% C matrices only for observable cases
+C1 = [1 0 0 0 0 0];
+C3 = [1 0 0 0 0 0; 0 0 0 0 1 0];
+C4 = [1 0 0 0 0 0; 0 0 1 0 0 0; 0 0 0 0 1 0];
+
+% Observer pole placement and calculation of Observer Gain matrices
+L1 = place(A', C1', observer_poles)';
+disp(L1)
+L3 = place(A', C3', observer_poles)';
+disp(L3)
+L4 = place(A', C4', observer_poles)';
+disp(L4)]]></w:t></w:r></w:p><w:p><w:pPr><w:sectPr/></w:pPr></w:p><w:p><w:pPr><w:pStyle w:val="code"/></w:pPr><w:r><w:t><![CDATA[% designing the system matrix with controller and observer
+% System 1
+Ac1 = [(A-B*K), B*K; zeros(size(A)), (A-L1*C1)];
+Bc = [B; zeros(size(B))];
+Cc1 = [C1 zeros(size(C1))];
+sys1 = ss(Ac1, Bc, Cc1, D);
+
+% defining intial conditions
+x0 = [0; 0; 30; 0; 40; 0];
+X0 = [x0; 0; 0; 0; 0; 0; 0];
+
+% Plotting response
+figure
+initial(sys1, X0)]]></w:t></w:r></w:p><w:p><w:pPr><w:sectPr/></w:pPr></w:p><w:p><w:pPr><w:pStyle w:val="code"/></w:pPr><w:r><w:t><![CDATA[% Unit step response
+figure
+step(sys1)]]></w:t></w:r></w:p><w:p><w:pPr><w:sectPr/></w:pPr></w:p><w:p><w:pPr><w:pStyle w:val="code"/></w:pPr><w:r><w:t><![CDATA[% System 2
+Ac3 = [(A-B*K), B*K; zeros(size(A)), (A-L3*C3)];
+Cc3 = [C3 zeros(size(C3))];
+sys2 = ss(Ac3, Bc, Cc3, D);
+
+% Plotting response
+figure
+initial(sys2, X0)]]></w:t></w:r></w:p><w:p><w:pPr><w:sectPr/></w:pPr></w:p><w:p><w:pPr><w:pStyle w:val="code"/></w:pPr><w:r><w:t><![CDATA[% Unit step response
+figure
+step(sys2)]]></w:t></w:r></w:p><w:p><w:pPr><w:sectPr/></w:pPr></w:p><w:p><w:pPr><w:pStyle w:val="code"/></w:pPr><w:r><w:t><![CDATA[% System 3
+Ac4 = [(A-B*K), B*K; zeros(size(A)), (A-L4*C4)];
+Cc4 = [C4 zeros(size(C4))];
+sys3 = ss(Ac4, Bc, Cc4, D);
+
+% Plotting response
+figure
+initial(sys3, X0)]]></w:t></w:r></w:p><w:p><w:pPr><w:sectPr/></w:pPr></w:p><w:p><w:pPr><w:pStyle w:val="code"/></w:pPr><w:r><w:t><![CDATA[% Unit step response
+figure
+step(sys3)
+]]></w:t></w:r></w:p></w:body></w:document>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body><w:p><w:pPr><w:pStyle w:val="code"/></w:pPr><w:r><w:t><![CDATA[%Variable symbols
+syms M m1 m2 l1 l2 g;
+% State space representation of the linearised model
+A=[0 1 0 0 0 0;
+    0 0 -(m1*g)/M 0 -(m2*g)/M 0;
+    0 0 0 1 0 0;
+    0 0 -((M+m1)*g)/(M*l1) 0 -(m2*g)/(M*l1) 0;
+    0 0 0 0 0 1;
+    0 0 -(m1*g)/(M*l2) 0 -(g*(M+m2))/(M*l2) 0];
+disp(A);]]></w:t></w:r></w:p><w:p><w:pPr><w:sectPr/></w:pPr></w:p><w:p><w:pPr><w:pStyle w:val="code"/></w:pPr><w:r><w:t><![CDATA[B=[0; 1/M; 0; 1/(M*(l1)); 0; 1/(M*l2)];
+disp(B);]]></w:t></w:r></w:p><w:p><w:pPr><w:sectPr/></w:pPr></w:p><w:p><w:pPr><w:pStyle w:val="code"/></w:pPr><w:r><w:t><![CDATA[% The Controllability matrix
+C = [B A*B (A^2)*B (A^3)*B (A^4)*B (A^5)*B];
+disp(C);]]></w:t></w:r></w:p><w:p><w:pPr><w:sectPr/></w:pPr></w:p><w:p><w:pPr><w:pStyle w:val="code"/></w:pPr><w:r><w:t><![CDATA[% Rank of Controlability Matrix
+Rank = rank(C);
+disp(Rank)]]></w:t></w:r></w:p><w:p><w:pPr><w:sectPr/></w:pPr></w:p><w:p><w:pPr><w:pStyle w:val="code"/></w:pPr><w:r><w:t><![CDATA[% Determinant of Controlability Matrix
+disp(simplify(det(C)));]]></w:t></w:r></w:p></w:body></w:document>

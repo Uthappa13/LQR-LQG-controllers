@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body><w:p><w:pPr><w:pStyle w:val="code"/></w:pPr><w:r><w:t><![CDATA[% Declaring the constants
+M = 1000; % Mass of cart
+m1 = 100; % Mass of pendulum 1
+m2 = 100; % Mass of pendulum 2
+l1 = 20; % Length of pendulum 1
+l2 = 10; % Length of pendulum 2
+g = 9.81; % Acceleration due to gravity
+
+% Linearized A matrix
+A = [0, 1, 0, 0, 0, 0; 0, 0, -(m1*g)/M, 0, -(m2*g)/M, 0; 0, 0, 0, 1, 0, 0; 0, 0, -((M+m1)*g)/(M*l1), 0, -(m2*g)/(M*l1), 0; 0, 0, 0, 0, 0, 1; 0, 0, -(m1*g)/(M*l2), 0, -(g*(M+m2))/(M*l2), 0];
+
+% C matrices for each case
+C1 = [1 0 0 0 0 0];
+C2 = [0 0 1 0 0 0; 0 0 0 0 1 0];
+C3 = [1 0 0 0 0 0; 0 0 0 0 1 0];
+C4 = [1 0 0 0 0 0; 0 0 1 0 0 0; 0 0 0 0 1 0];
+
+% Observability matrices for each case
+O1 = [C1; C1*A; C1*(A^2); C1*(A^3); C1*(A^4); C1*(A^5)];
+O2 = [C2; C2*A; C2*(A^2); C2*(A^3); C2*(A^4); C2*(A^5)];
+O3 = [C3; C3*A; C3*(A^2); C3*(A^3); C3*(A^4); C3*(A^5)];
+O4 = [C4; C4*A; C4*(A^2); C4*(A^3); C4*(A^4); C4*(A^5)];
+
+% Rank check for observability
+% Output 1
+if rank(O1) == 6
+    disp('System is observable for Output 1.');
+else
+    disp('System is not observable for Output 1.');
+end]]></w:t></w:r></w:p><w:p><w:pPr><w:sectPr/></w:pPr></w:p><w:p><w:pPr><w:pStyle w:val="code"/></w:pPr><w:r><w:t><![CDATA[% Output 2
+if rank(O2) == 6
+    disp('System is observable for Output 2.');
+else
+    disp('System is not observable for Output 2.');
+end]]></w:t></w:r></w:p><w:p><w:pPr><w:sectPr/></w:pPr></w:p><w:p><w:pPr><w:pStyle w:val="code"/></w:pPr><w:r><w:t><![CDATA[% Output 3
+if rank(O3) == 6
+    disp('System is observable for Output 3.');
+else
+    disp('System is not observable for Output 3.');
+end]]></w:t></w:r></w:p><w:p><w:pPr><w:sectPr/></w:pPr></w:p><w:p><w:pPr><w:pStyle w:val="code"/></w:pPr><w:r><w:t><![CDATA[% Output 4
+if rank(O4) == 6
+    disp('System is observable for Output 4.');
+else
+    disp('System is not observable for Output 4.');
+end]]></w:t></w:r></w:p></w:body></w:document>

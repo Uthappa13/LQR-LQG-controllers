@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body><w:p><w:pPr><w:pStyle w:val="code"/></w:pPr><w:r><w:t><![CDATA[% Initial conditions
+x0 = [0; 0; 30; 0; 40; 0]; % [x; x_dot; theta1; theta_dot_1; theta2; theta_dot_2]
+
+% Time span
+tspan = [0 500]; % For example, from 0 to 10 seconds
+
+[t, states] = ode45(@systemDynamics, tspan, x0);
+
+% Plotting states
+plot(t, states);
+legend('x', 'x_dot', 'theta1', 'theta_dot_1', 'theta2', 'theta_dot_2');
+xlabel('Time (s)');
+ylabel('State Variables');
+title('Response of the Non-Linear System');]]></w:t></w:r></w:p><w:p><w:pPr><w:sectPr/></w:pPr></w:p><w:p><w:pPr><w:pStyle w:val="code"/></w:pPr><w:r><w:t><![CDATA[% Declaring the constants
+M = 1000; % Mass of cart
+m1 = 100; % Mass of pendulum 1
+m2 = 100; % Mass of pendulum 2
+l1 = 20; % Length of pendulum 1
+l2 = 10; % Length of pendulum 2
+g = 9.81; % Acceleration due to gravity
+
+% K-Gain matrix obtained from LQR controller to linearized system
+K = [316.2278, 926.8775, -41.7027, -683.4756, 44.1102, -334.2650];
+
+% Linearized A & B matrices
+A = [0, 1, 0, 0, 0, 0; 0, 0, -(m1*g)/M, 0, -(m2*g)/M, 0; 0, 0, 0, 1, 0, 0; 0, 0, -((M+m1)*g)/(M*l1), 0, -(m2*g)/(M*l1), 0; 0, 0, 0, 0, 0, 1; 0, 0, -(m1*g)/(M*l2), 0, -(g*(M+m2))/(M*l2), 0];
+B = [0; 1/M; 0; 1/(M*l1); 0; 1/(M*l2)];
+
+% Eigenvalues of closed-loop system
+poles = eig(A - B*K);
+disp(poles)]]></w:t></w:r></w:p><w:p><w:pPr><w:sectPr/></w:pPr></w:p><w:p><w:pPr><w:pStyle w:val="code"/></w:pPr><w:r><w:t><![CDATA[function dxdt = systemDynamics(~, x)
+    % Declaring the constants
+    M = 1000; % Mass of cart
+    m1 = 100; % Mass of pendulum 1
+    m2 = 100; % Mass of pendulum 2
+    l1 = 20; % Length of pendulum 1
+    l2 = 10; % Length of pendulum 2
+    g = 9.81; % Acceleration due to gravity
+    K = [316.2278, 926.8775, -41.7027, -683.4756, 44.1102, -334.2650];
+    F = -K*x; % External Force (control input from LQR)
+
+    % State variables
+    x_dot = x(2);
+    theta1 = x(3);
+    theta_dot_1 = x(4);
+    theta2 = x(5);
+    theta_dot_2 = x(6);
+
+    % State equations
+    f1 = x_dot;
+    f2 = (-m1*g*sin(theta1)*cos(theta1)-m2*g*sin(theta2)*cos(theta2)-m1*l1*(theta_dot_1^2)*sin(theta1)-m2*l2*(theta_dot_2^2)*sin(theta2)+F)/(M+m1+m2-m1*((cos(theta1))^2)-m2*((cos(theta2))^2));
+    f3 = theta_dot_1;
+    f4 = (-m1*g*sin(theta1)*cos(theta1)-m2*g*sin(theta2)*cos(theta2)-m1*l1*(theta_dot_1^2)*sin(theta1)-m2*l2*(theta_dot_2^2)*sin(theta2)+F)/((M+m1+m2-m1*((cos(theta1))^2)-m2*((cos(theta2))^2))*l1)-(g*sin(theta1))/l1;
+    f5 = theta_dot_2;
+    f6 = (-m1*g*sin(theta1)*cos(theta1)-m2*g*sin(theta2)*cos(theta2)-m1*l1*(theta_dot_1^2)*sin(theta1)-m2*l2*(theta_dot_2^2)*sin(theta2)+F)/((M+m1+m2-m1*((cos(theta1))^2)-m2*((cos(theta2))^2))*l2)-(g*sin(theta2))/l2;
+
+    % Return the derivatives as a vector
+    dxdt = [f1; f2; f3; f4; f5; f6];
+end]]></w:t></w:r></w:p></w:body></w:document>
